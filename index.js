@@ -39,6 +39,18 @@ function getIndex(date)
     return dateIndex + hourIndex + minuteIndex;
 }
 
+function indexToDate(index)
+{
+    const ticksPerHour = 12;
+    const ticksPerday = ticksPerHour * 24;
+
+    const day = Math.floor(index / ticksPerday);
+    const hour = Math.floor((index - (ticksPerday * day)) / ticksPerHour);
+    const minute = Math.floor((index - (ticksPerday * day) - (ticksPerHour * hour)) * 5);
+
+    return new Date(2015, 11, day, hour, minute);
+}
+
 function addEvent(calendar, start, end)
 {
     const startIndex = getIndex(start);
@@ -137,7 +149,7 @@ function suggest(calendars, fromDate, toDate, fromHour, toHour, howLongMinutes, 
             }
         }
 
-        index += indexRange;
+        index += indexRange - 1;
     }
 
     return matches;
@@ -178,4 +190,9 @@ assert(0, isFreeArray(calendars, new Date(2015, 11, 1, 8, 0), new Date(2015, 11,
 assert(5, isFreeArray(calendars, new Date(2015, 11, 1, 20, 0), new Date(2015, 11, 1, 23, 30)));
 
 // Suggest some options based on some settings
-console.log(suggest(calendars, 2, 4, 20, 23, 120, 3));
+const suggestions = suggest(calendars, 2, 4, 20, 23, 120, 3);
+console.log(suggestions);
+
+suggestions.forEach(suggestion => {
+    console.log('From: ' + indexToDate(suggestion.start) + ' to ' + indexToDate(suggestion.end));
+});
