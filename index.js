@@ -25,11 +25,16 @@ function createEmptyCalendar()
     return new Array(size).fill(0);
 }
 
+function minuteToIndex(minutes)
+{
+    return Math.floor(minutes / 5);
+}
+
 function getIndex(date)
 {
     const dateIndex = (date.getDate() - 1) * (12 * 24);
     const hourIndex = date.getHours() * 12;
-    const minuteIndex = Math.floor(date.getMinutes() / 5);
+    const minuteIndex = minuteToIndex(date.getMinutes());
 
     return dateIndex + hourIndex + minuteIndex;
 }
@@ -42,7 +47,7 @@ function addEvent(calendar, start, end)
 //    console.log('Add: ' + startIndex + ':' + endIndex);
     for (let index = startIndex; index < endIndex; ++index)
     {
-        calendar[index] = 1;
+        calendar[index] += 1;
     }
 }
 
@@ -53,7 +58,7 @@ function isFree(calendar, start, end)
 
     for (let index = startIndex; index < endIndex; ++index)
     {
-        if (calendar[index + 1] === 1)
+        if (calendar[index + 1] !== 0)
         {
             return false;
         }
@@ -88,11 +93,54 @@ function createMatrix(calendars)
     return matrix;
 }
 
-function suggest(calendars, startInfo, endInfo, limit)
+function suggest(calendars, fromDate, toDate, fromHour, toHour, howLongMinutes, maxSuggestCount)
 {
     const matrix = createMatrix(calendars);
+    const startIndex = getIndex(new Date(2015, 11, fromDate, fromHour));
+    const endIndex = getIndex(new Date(2015, 11, toDate, toHour));
+    const indexRange = minuteToIndex(howLongMinutes);
 
-    console.log(matrix);
+    let matches = [];
+    let maxUnable = 0;
+
+    for (let index = startIndex; index < endIndex; ++index)
+    {
+        // Check out of hour bound
+        // Not yet done lol
+
+        if (matrix[index] > maxUnable)
+        {
+            continue;
+        }
+
+        // Check if we have enough free indexes
+        let hasEnough = true;
+        for (let i = index; i < index + indexRange; ++i)
+        {
+            if (matrix[i] > maxUnable)
+            {
+                hasEnough = false;
+                break;
+            }
+        }
+
+        if (hasEnough)
+        {
+            matches.push({
+                start: index,
+                end: index + indexRange,
+                canGoCount: calendars.length - maxUnable
+            });
+            if (matches.length === maxSuggestCount)
+            {
+                break;
+            }
+        }
+
+        index += indexRange;
+    }
+
+    return matches;
 }
 
 let calendars = [];
@@ -130,4 +178,4 @@ assert(0, isFreeArray(calendars, new Date(2015, 11, 1, 8, 0), new Date(2015, 11,
 assert(5, isFreeArray(calendars, new Date(2015, 11, 1, 20, 0), new Date(2015, 11, 1, 23, 30)));
 
 // Suggest some options based on some settings
-console.log(suggest(calendars, new Date(2015, 11, 2, 20, 30), new Date(2015, 11, 4, 23, 0), 3));
+console.log(suggest(calendars, 2, 4, 20, 23, 120, 3));
