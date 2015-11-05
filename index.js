@@ -28,7 +28,7 @@ function createEmptyCalendar()
 function getIndex(date)
 {
     const dateIndex = (date.getDate() - 1) * (12 * 24);
-    const hourIndex = date.getHours() * 24;
+    const hourIndex = date.getHours() * 12;
     const minuteIndex = Math.floor(date.getMinutes() / 5);
 
     return dateIndex + hourIndex + minuteIndex;
@@ -39,6 +39,7 @@ function addEvent(calendar, start, end)
     const startIndex = getIndex(start);
     const endIndex = getIndex(end);
 
+//    console.log('Add: ' + startIndex + ':' + endIndex);
     for (let index = startIndex; index < endIndex; ++index)
     {
         calendar[index] = 1;
@@ -61,6 +62,19 @@ function isFree(calendar, start, end)
     return true;
 }
 
+function isFreeArray(calendars, start, end)
+{
+    let count = 0;
+
+    calendars.forEach(calendar => {
+        if (isFree(calendar, start, end)) {
+            ++count;
+        }
+    });
+
+    return count;
+}
+
 let calendars = [];
 calendars.push(createEmptyCalendar());
 calendars.push(createEmptyCalendar());
@@ -75,12 +89,21 @@ addEvent(calendars[2], new Date(2015, 11, 4), new Date(2015, 11, 30, 23, 59));
 addEvent(calendars[3], new Date(2015, 11, 4), new Date(2015, 11, 30, 23, 59));
 addEvent(calendars[4], new Date(2015, 11, 4), new Date(2015, 11, 30, 23, 59));
 
-// Some
+// Little event for testing
 addEvent(calendars[0], new Date(2015, 11, 1, 0, 15), new Date(2015, 11, 1, 0, 30));
-//addEvent(calendars[0], new Date(2015, 11, 1, 8, 0), new Date(2015, 11, 1, 18, 30));
 
 console.log(calendars[0]);
 assert(true, isFree(calendars[0], new Date(2015, 11, 1, 0, 0), new Date(2015, 11, 1, 0, 14)));
 assert(false, isFree(calendars[0], new Date(2015, 11, 1, 0, 10), new Date(2015, 11, 1, 0, 20)));
 assert(false, isFree(calendars[0], new Date(2015, 11, 1, 0, 0), new Date(2015, 11, 2, 0, 0)));
 assert(true, isFree(calendars[0], new Date(2015, 11, 1, 0, 30), new Date(2015, 11, 1, 0, 35)));
+
+// Everybody is sleeping till 12
+calendars.forEach(calendar => {
+    const days = [1, 2, 3, 4];
+    days.forEach(day => {
+        addEvent(calendar, new Date(2015, 11, day, 0, 0), new Date(2015, 11, day, 12, 0));
+    });
+});
+
+assert(0, isFreeArray(calendars, new Date(2015, 11, 1, 8, 0), new Date(2015, 11, 1, 12, 0))); // Everybody is sleeping
