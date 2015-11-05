@@ -75,6 +75,26 @@ function isFreeArray(calendars, start, end)
     return count;
 }
 
+function createMatrix(calendars)
+{
+    let matrix = createEmptyCalendar();
+
+    calendars.forEach(calendar => {
+        calendar.forEach((value, index) => {
+            matrix[index] += (value === 0 ? 0 : 1);
+        });
+    });
+
+    return matrix;
+}
+
+function suggest(calendars, startInfo, endInfo, limit)
+{
+    const matrix = createMatrix(calendars);
+
+    console.log(matrix);
+}
+
 let calendars = [];
 calendars.push(createEmptyCalendar());
 calendars.push(createEmptyCalendar());
@@ -107,3 +127,7 @@ calendars.forEach(calendar => {
 });
 
 assert(0, isFreeArray(calendars, new Date(2015, 11, 1, 8, 0), new Date(2015, 11, 1, 12, 0))); // Everybody is sleeping
+assert(5, isFreeArray(calendars, new Date(2015, 11, 1, 20, 0), new Date(2015, 11, 1, 23, 30)));
+
+// Suggest some options based on some settings
+console.log(suggest(calendars, new Date(2015, 11, 2, 20, 30), new Date(2015, 11, 4, 23, 0), 3));
